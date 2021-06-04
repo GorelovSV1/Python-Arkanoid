@@ -1,0 +1,54 @@
+version: '3.1'
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    environment:
+      - INFLUXDB_DB=sensors
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_ADMIN_USER=telegraf
+      - INFLUXDB_ADMIN_PASSWORD
+
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  mosquitto:
+    image: eclipse-mosquitto:1.6.12
+    hostname: mosquitto
+    container_name: mosquitto_1
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+#  subscriber:
+#    build:
+#      context: .
+#      dockerfile: subscriber.Dockerfile
+#    command: "python3 subscriber.py"
+#    container_name: subscriber
+#    depends_on:
+#      - influxdb
+#      - mosquitto
+#    network_mode: host
+
+
+volumes:
+  influxdb-storage:
+  grafana-storage:
